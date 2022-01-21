@@ -3,14 +3,76 @@ const app = express()
 const cors = require("cors")
 const pool = require("./db");
 
-
 //middleware
 app.use(cors())
-app.use(express.json())
+app.use(express.json()) 
+
+
+
+
+
+//register
+app.post("/register" , async (req, res) => {
+
+try {
+const username = req.body.username;
+const password = req.body.regpassword;
+const newUser = await pool.query(
+    "INSERT INTO usertable (username, regpassword) VALUES ($1, $2) RETURNING * " ,
+    [username, password]);
+    res.json(newUser.rows[0]);
+} catch (err) {
+    console.error(err.message)
+    
+}
+
+
+});
+
+
+//login
+
+/*app.post("/login" , async (req, res) => {
+
+try {
+    
+const username = req.body.username;
+const password = req.body.regpassword;
+const returningUser = await pool.query(
+    "SELECT * FROM usertable WHERE username = $1 AND password = $2 " ,
+    [username, password]);
+    res.json(returningUser.rows[0]);
+} catch (err) {
+    console.error(err.message)
+}
+
+})
+  */
+
+app.post('login/' ,(req, res) => {    
+    const username = req.body.username;
+    const password = req.body.regpassword;
+    
+         pool.query("SELECT * FROM usertable WHERE username = $1 AND password = $2 " ,
+        [username, password],
+
+        (err, result) => {
+            if (err) {
+                res.send({err: err});
+            }
+
+if(result.length > 0){
+res.send(result);
+        } else {
+            res.send({ message: "Wrong username/password combination!"})
+        }
+        }
+        )
+    }) 
+
 
 
 //Routes
-
 // create a todo
 app.post("/todos" , async (req, res) => {
 try {
@@ -25,6 +87,9 @@ res.json(newTodo.rows[0]);
 } catch (err) {
     console.error(err.message);
 }
+
+
+
 
 
 })
@@ -100,6 +165,14 @@ res.json("Todo was deleted!")
     }
 })
 
+
+
+
+
+app.listen(5000, () => {
+    console.log("server has started on port 5000");
+
+});
 
 
 
